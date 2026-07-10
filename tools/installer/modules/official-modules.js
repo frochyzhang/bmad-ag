@@ -128,6 +128,15 @@ class OfficialModules {
       }
     }
 
+    // Add built-in agcore module (directly under src/agcore-skills)
+    const agcorePath = getSourcePath('agcore-skills');
+    if (await fs.pathExists(agcorePath)) {
+      const agcoreInfo = await this.getModuleInfo(agcorePath, 'agcore', 'src/agcore-skills');
+      if (agcoreInfo) {
+        modules.push(agcoreInfo);
+      }
+    }
+
     return { modules };
   }
 
@@ -222,6 +231,14 @@ class OfficialModules {
       const bmmPath = getSourcePath('bmm-skills');
       if (await fs.pathExists(bmmPath)) {
         return bmmPath;
+      }
+    }
+
+    // Check for built-in agcore module (directly under src/agcore-skills)
+    if (moduleCode === 'agcore') {
+      const agcorePath = getSourcePath('agcore-skills');
+      if (await fs.pathExists(agcorePath)) {
+        return agcorePath;
       }
     }
 

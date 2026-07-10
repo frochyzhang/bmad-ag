@@ -1,0 +1,4 @@
+module,skill,display-name,menu-code,description,action,args,phase,preceded-by,followed-by,required,output-location,outputs
+BMAD ag-core Skills,_meta,,,,,,,,,false,https://docs.bmad-method.org/llms.txt,
+BMAD ag-core Skills,bmad-agcore-skills,ag-core Knowledge Base,AGK,Load ag-skills encapsulation patterns (lazy-loaded by task) and check knowledge staleness vs upstream.,knowledge,{task: ag-core task type},anytime,,,false,,loaded ag-core patterns + re-sync reminders
+BMAD ag-core Skills,bmad-agcore-dev,ag-core Dev Pipeline,AGD,Proto-first pipeline: load knowledge then .proto to aggo scaffold to biz fill to build+ag-core-lint gate, with active vault recording at key nodes.,develop,{proto: path to .proto}|{service: service name},anytime,bmad-agcore-skills:knowledge,,false,ag-core project,generated scaffold + biz code + vault records

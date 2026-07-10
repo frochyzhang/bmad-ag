@@ -1,0 +1,34 @@
+# ag-core-lint 规则集(数据化,逐步扩充)—— Story 3.1 / AD-8
+#
+# 每条规则独立数据条目;新增规则只改本文件,不改 ag-core-lint.py。
+# 初版覆盖最毒的可枚举违规(SPEC CAP-6 + ag-skills "Never Do")。
+# match 类型:
+#   - regex_in_file: 在 include glob 匹配的文件里正则搜,命中即违规
+#   - regex_in_path: 文件路径匹配 path_glob 且内容正则命中即违规(用于"业务逻辑落错层")
+#   - edited_generated: include glob 命中的生成目录文件被手改(存在即违规,提示不可改)
+
+rules:
+  - id: no-database-sql
+    severity: error
+    description: '禁止直接 import "database/sql";应走 ag-core 生成的 DAO / db 封装(见 dao-usage)。'
+    match: regex_in_file
+    include: "**/*.go"
+    exclude: ["**/adpgen/**", "**/svcgen/**", "**/api/**"]
+    pattern: '"database/sql"'
+
+  - id: no-biz-logic-in-service
+    severity: error
+    description: "internal/service/ 只做薄层委托,禁止业务逻辑;业务逻辑应在 internal/biz/。"
+    match: regex_in_path
+    path_glob: "**/internal/service/**/*.go"
+    # 薄层委托应只调用 biz;出现直接 DAO 调用/DB/事务/循环业务处理视为业务逻辑下沉的信号
+    pattern: '\b(dao\.|Repository\.|\.Begin\(|\.Commit\(|for\s+.*range\s+.*\{[\s\S]*\.(Insert|Update|Delete|Find))'
+
+  - id: no-edit-generated
+    severity: error
+    description: "禁止手改生成目录(adpgen/ svcgen/ api/);它们由 aggo/gen-go-db 生成,重生成会覆盖。"
+    match: edited_generated
+    include: ["**/internal/adpgen/**/*.go", "**/internal/svcgen/**/*.go", "**/api/**/*.pb.go"]
+    # 检测方式:存在"手改标记"——本规则默认对这些目录仅在检测到非生成头注释缺失时告警。
+    # 初版实现为软检测:若文件缺少常见生成头(Code generated / DO NOT EDIT)则告警可能被手改。
+    generated_header: "(Code generated|DO NOT EDIT|自动生成|生成的)"

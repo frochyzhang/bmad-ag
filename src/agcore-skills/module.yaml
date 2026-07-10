@@ -1,0 +1,37 @@
+code: agcore
+name: "BMAD ag-core Skills"
+description: "集成 ag-core 微服务框架的内置 BMad 模块：加载 ag-skills 知识底座、走 proto→aggo 骨架→biz 填肉流水线、build+ag-core-lint 护栏，并把开发过程沉淀进唯一第二记忆体（Obsidian vault）。机器干生成/提炼，人守判断/收录。"
+default_selected: true # fork 版默认安装,一步装即带齐 ag-core 能力
+
+header: "BMAD ag-core Configuration"
+subheader: "配置 ag-core 集成模块。\n工具链从 GitHub 唯一来源安装,知识底座 clone ag-skills,开发记忆沉淀进 Obsidian vault。"
+
+# Variables from Core Config inserted:
+## user_name
+## project_name
+## communication_language
+## document_output_language
+## output_folder
+
+# vault 根路径:CAP-5 的 vault-write 脚本与 dev skill 从此 key 读(AD-9 / AD-11)。
+# 首次安装务必指定你自己的 Obsidian vault 实际路径;默认值仅为中性占位。
+vault_path:
+  prompt: "你的 Obsidian vault（第二记忆体）根路径?（请填写实际路径,如 ~/vaults/my-vault）"
+  default: "~/vaults/ag-core-vault"
+  result: "{value}"
+
+# ag-skills checkout 位置:CAP-1 的 SKILL_ROOT 解析与 CAP-7 的 re-sync 比对从此 key 读(AD-6 / AD-11)。
+agskills_path:
+  prompt: "ag-skills 知识底座 clone 到哪个位置?"
+  default: ".bmad-agcore/ag-skills"
+  result: "{project-root}/{value}"
+
+# CAP-7 知识过期阈值:re-sync 比对落后超此天数则提醒(AD-12)。
+staleness_threshold_days:
+  prompt: "ag-skills 快照落后上游多少天后提醒 re-sync?"
+  default: 30
+  result: "{value}"
+
+# 安装时创建的目录(声明式,无代码执行)。agskills_path 的实际 clone 由安装后钩子完成。
+directories:
+  - "{output_folder}"
