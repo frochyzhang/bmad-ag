@@ -32,3 +32,78 @@ rules:
     # 检测方式:存在"手改标记"——本规则默认对这些目录仅在检测到非生成头注释缺失时告警。
     # 初版实现为软检测:若文件缺少常见生成头(Code generated / DO NOT EDIT)则告警可能被手改。
     generated_header: "(Code generated|DO NOT EDIT|自动生成|生成的)"
+
+  # ── 竞品禁用规则(零误报:这些库在 ag-core 项目里没有合法理由,与 ag-core 封装竞争)──
+  # 排除生成目录 + vendor(第三方源码可能合法引用)。约束真相源见 .claude/ai-context/00-instructions.md。
+
+  - id: no-generic-http-framework
+    severity: error
+    description: "禁止 gin/gorilla-mux/echo 等通用 HTTP 框架;HTTP 服务走 ag-core hertz(aghertz) 封装(见 hertz-patterns)。"
+    match: regex_in_file
+    include: "**/*.go"
+    exclude: ["**/adpgen/**", "**/svcgen/**", "**/api/**", "**/vendor/**"]
+    pattern: '"github\.com/(gin-gonic/gin|gorilla/mux|labstack/echo(/v[0-9]+)?)"'
+
+  - id: no-viper-config
+    severity: error
+    description: "禁止 spf13/viper 手做配置;配置走 ag_conf,配置中心走 agnacos(见 ag-conf-patterns / nacos-patterns)。"
+    match: regex_in_file
+    include: "**/*.go"
+    exclude: ["**/adpgen/**", "**/svcgen/**", "**/api/**", "**/vendor/**"]
+    pattern: '"github\.com/spf13/viper"'
+
+  - id: no-nacos-sdk-direct
+    severity: error
+    description: "禁止直接用 nacos-sdk-go 手拼客户端;配置中心/注册发现走 agnacos 封装(见 nacos-patterns)。"
+    match: regex_in_file
+    include: "**/*.go"
+    exclude: ["**/adpgen/**", "**/svcgen/**", "**/api/**", "**/vendor/**"]
+    pattern: '"github\.com/nacos-group/nacos-sdk-go(/v[0-9]+)?'
+
+  - id: no-generic-kafka-client
+    severity: error
+    description: "禁止 kafka-go/confluent-kafka 等通用 Kafka 客户端;MQ 走 ag-core agsarama 封装(见 kafka-patterns)。"
+    match: regex_in_file
+    include: "**/*.go"
+    exclude: ["**/adpgen/**", "**/svcgen/**", "**/api/**", "**/vendor/**"]
+    pattern: '"github\.com/(segmentio/kafka-go|confluentinc/confluent-kafka-go(/v[0-9]+)?)"'
+
+  - id: no-sqlx
+    severity: error
+    description: "禁止 jmoiron/sqlx;数据库访问走 gen-go-db 生成的 DAO / ag-core db 封装(见 dao-usage)。"
+    match: regex_in_file
+    include: "**/*.go"
+    exclude: ["**/adpgen/**", "**/svcgen/**", "**/api/**", "**/vendor/**"]
+    pattern: '"github\.com/jmoiron/sqlx"'
+
+  - id: no-generic-redis-client
+    severity: error
+    description: "禁止直接用 go-redis;缓存走 ag-core agredis 封装(见 redis-patterns)。"
+    match: regex_in_file
+    include: "**/*.go"
+    exclude: ["**/adpgen/**", "**/svcgen/**", "**/api/**", "**/vendor/**"]
+    pattern: '"github\.com/(go-redis/redis(/v[0-9]+)?|redis/go-redis/v[0-9]+)"'
+
+  # ── 裸用底层库(zap/sarama 既是竞品又是 ag-core 底层;业务项目不含 ag-core 源码,
+  #    故业务层直接 import 基本=绕过封装。误报风险稍高,如项目确有正当理由直接用,
+  #    在项目侧 lint-rules 加 exclude 或注释豁免)──
+
+  - id: no-raw-zap
+    severity: error
+    description: "禁止业务层直接 import uber-go/zap;日志走 ag-core aglog(agslog)封装(aglog 底层已用 zap,见 aglog-patterns)。"
+    match: regex_in_file
+    include: "**/*.go"
+    exclude: ["**/adpgen/**", "**/svcgen/**", "**/api/**", "**/vendor/**"]
+    pattern: '"go\.uber\.org/zap"'
+
+  - id: no-raw-logrus
+    severity: error
+    description: "禁止 sirupsen/logrus;日志走 ag-core aglog(agslog)封装(见 aglog-patterns)。"
+    match: regex_in_file
+    include: "**/*.go"
+    exclude: ["**/adpgen/**", "**/svcgen/**", "**/api/**", "**/vendor/**"]
+    pattern: '"github\.com/sirupsen/logrus"'
+
+  # 注意:IBM/Shopify sarama 不禁 —— agsarama 的正确用法就是业务层直接使用 sarama API
+  # (kafka-patterns:"生产者/消费者直接使用 sarama API")。禁 sarama 会误杀合法用法。
+  # 真正要防的是"绕过 agsarama 自己 new sarama client",这非正则可判,交由引导层 + 人工审。

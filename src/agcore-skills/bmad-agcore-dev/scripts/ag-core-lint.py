@@ -89,8 +89,27 @@ def parse_args():
     return p.parse_args()
 
 
+def _glob_match(rel_posix: str, pattern: str) -> bool:
+    """支持 `**` 递归段的 glob 匹配(相对 posix 路径 vs 模式)。
+
+    Python 的 PurePath.match() 不支持 `**` 递归通配(把 `**` 当单层 `*`),
+    这会让 `**/vendor/**` 这类 exclude 失效。这里用 fnmatch.translate 手工处理:
+    先把 `**/` 翻成"零或多段",`**` 翻成"任意字符",再逐段回退到普通 fnmatch。
+    """
+    import fnmatch
+
+    # 直接 fnmatch(fnmatch 的 * 会跨 /,对 `**/vendor/**` 恰好够用)
+    if fnmatch.fnmatch(rel_posix, pattern):
+        return True
+    # 兜底:形如 `**/X/**` → 命中任意包含 X 段的路径
+    core = pattern.strip("*/")
+    if core and f"/{core}/" in f"/{rel_posix}/":
+        return True
+    return False
+
+
 def iter_files(root: Path, include, exclude):
-    """按 include glob 收集文件,排除 exclude glob。"""
+    """按 include glob 收集文件,排除 exclude glob(支持 `**` 递归段)。"""
     includes = include if isinstance(include, list) else [include]
     excludes = exclude or []
     seen = set()
@@ -99,7 +118,7 @@ def iter_files(root: Path, include, exclude):
             if not f.is_file():
                 continue
             rel = f.relative_to(root).as_posix()
-            if any(f.match(ex) or Path(rel).match(ex) for ex in excludes):
+            if any(_glob_match(rel, ex) for ex in excludes):
                 continue
             if f not in seen:
                 seen.add(f)
