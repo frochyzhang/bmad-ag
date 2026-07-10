@@ -22,11 +22,56 @@ import re
 import sys
 from pathlib import Path
 
-try:
-    import yaml
-except ImportError:
-    print(json.dumps({"error": "pyyaml required"}))
-    print("ag-core-lint: pyyaml 未安装", file=sys.stderr)
+def _ensure_yaml():
+    """确保 pyyaml 可用。缺失则自动安装(护栏不能因缺依赖静默失效)。
+
+    顺序:直接 import → uv pip install → pip install(--user 兜底) → 重试 import。
+    全部失败才放弃(由调用方 exit 2)。返回 yaml 模块或 None。
+    """
+    try:
+        import yaml  # noqa: F401
+        return yaml
+    except ImportError:
+        pass
+
+    import subprocess
+    import importlib
+
+    print("ag-core-lint: 检测到缺少 pyyaml,尝试自动安装...", file=sys.stderr)
+
+    # 候选安装命令,按优先级尝试;第一个成功即止
+    attempts = []
+    if __import__("shutil").which("uv"):
+        # uv 装进当前解释器环境(--python 指向本进程 sys.executable)
+        attempts.append(["uv", "pip", "install", "--python", sys.executable, "pyyaml"])
+    attempts.append([sys.executable, "-m", "pip", "install", "pyyaml"])
+    attempts.append([sys.executable, "-m", "pip", "install", "--user", "pyyaml"])
+
+    for cmd in attempts:
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+            if r.returncode == 0:
+                importlib.invalidate_caches()
+                try:
+                    import yaml  # noqa: F401
+                    print(f"ag-core-lint: pyyaml 已自动安装({' '.join(cmd[:3])})。", file=sys.stderr)
+                    return yaml
+                except ImportError:
+                    continue
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+
+    return None
+
+
+yaml = _ensure_yaml()
+if yaml is None:
+    print(json.dumps({"error": "pyyaml required and auto-install failed"}))
+    print(
+        "ag-core-lint: pyyaml 未安装且自动安装失败。请手动执行 "
+        "`pip install pyyaml`(或 `uv pip install pyyaml`)后重试。",
+        file=sys.stderr,
+    )
     sys.exit(2)
 
 RED = "\033[31m"

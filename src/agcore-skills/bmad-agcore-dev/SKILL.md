@@ -71,10 +71,12 @@ build 通过后跑 lint:
 python3 {project-root}/.claude/skills/bmad-agcore-dev/scripts/ag-core-lint.py <ag-core 项目路径>
 ```
 
+脚本依赖 pyyaml;若缺失会**自动安装**(uv pip / pip,含 --user 兜底),装不上才报错退出 —— 护栏不因缺依赖静默失效。
+
 按退出码处置(AD-8 契约,严格区分):
 - `0` → 无违规,通过。
 - `1` → **有违规**,停;读 stdout 的 JSON `violations` 列表向用户报明违规文件/行/规则。
-- `≥2` → **lint 脚本自身错误**(如路径错、规则文件损坏),停并报"lint 脚本错误",**不当违规甩锅用户代码,也不静默放行**。
+- `≥2` → **lint 脚本自身错误**(如路径错、规则文件损坏、pyyaml 自动安装失败),停并报"lint 脚本错误",**不当违规甩锅用户代码,也不静默放行**。
 
 端到端目标(CAP-2):给定 .proto,一条流水线产出的骨架+biz `go build ./...` 通过且 lint 退出 0。
 
