@@ -215,6 +215,16 @@ Activation is complete. If `activation_steps_prepend` or `activation_steps_appen
     <action>Load comprehensive context from story file's Dev Notes section</action>
     <action>Extract developer guidance from Dev Notes: architecture requirements, previous learnings, technical specifications</action>
     <action>Use enhanced story context to inform implementation decisions and approaches</action>
+
+    <!-- ag-core 项目检测与约束路由桥(fork 内嵌 agcore 模块专用) -->
+    <action>检测本项目是否为 ag-core 项目:若 `{project-root}/.bmad-agcore/` 目录存在,或 `{project-root}/_bmad/agcore/config.yaml` 存在,则 {{is_agcore_project}} = true;否则 false</action>
+    <check if="{{is_agcore_project}} == true">
+      <critical>本项目已声明使用 ag-core 微服务框架。通用 Go 写法(zap 日志、net/http+mux、标准 database/sql、手拼 nacos client)一律禁止 —— 必须走 ag-core 稳定封装层(aglog / ag_conf / hertz / kitex / ag-core db 封装)。</critical>
+      <action>若 `{project-root}/.claude/ai-context/00-instructions.md` 存在,完整加载其内容作为**项目级覆盖约束**(优先级高于本工作流的通用指导)</action>
+      <action>记住:实施阶段(step 5)产出任何 ag-core 服务代码前,MUST 先经 `bmad-agcore-dev` 的 Step 0 知识加载前置(按任务类型懒加载 ag-skills 的 aglog/ag-conf/hertz/kitex/db 等 references),再落笔。不得凭通用经验直接写。</action>
+      <output>🔗 **检测到 ag-core 项目** —— 实施将走 ag-core 封装流水线,禁用通用 Go 替代实现(zap/mux/database/sql 等)。</output>
+    </check>
+
     <output>✅ **Context Loaded**
       Story and project context available for implementation
     </output>
@@ -311,6 +321,19 @@ Activation is complete. If `activation_steps_prepend` or `activation_steps_appen
 
   <step n="5" goal="Implement task following red-green-refactor cycle">
     <critical>FOLLOW THE STORY FILE TASKS/SUBTASKS SEQUENCE EXACTLY AS WRITTEN - NO DEVIATION</critical>
+
+    <!-- ag-core 知识加载门禁:检测为 ag-core 项目时,写码前强制走 agcore-dev 封装知识 -->
+    <check if="{{is_agcore_project}} == true">
+      <critical>ag-core 封装门禁(不可跳过):在为本任务写任何服务代码之前,MUST 先激活 `bmad-agcore-dev` 并执行其 Step 0 知识加载 —— 按当前任务类型从 ag-skills 懒加载对应封装模式:
+        - HTTP 服务 → hertz-patterns(禁 net/http + gorilla/mux)
+        - gRPC 服务 → kitex-patterns、proto-idl-patterns
+        - 日志 → aglog-patterns(禁 zap / logrus / 标准 log 直接 new)
+        - 配置/配置中心 → ag-conf-patterns(nacos 经 ag_conf 接入,禁手拼 nacos client)
+        - 数据库 → db-yaml-format、gen-go-db-cli、dao-usage(禁裸 database/sql)
+        - 缓存/MQ → redis-patterns / kafka-patterns
+      未加载对应封装知识不得落笔。写法须显式落在 ag-skills 记载的黄金范例上。</critical>
+      <action>激活 `bmad-agcore-dev`,交由其 proto→骨架→biz→build+lint 流水线产出本任务的 ag-core 代码;完成后返回本工作流继续 step 6 测试与 step 7 校验</action>
+    </check>
 
     <action>Review the current task/subtask from the story file - this is your authoritative implementation guide</action>
     <action>Plan implementation following red-green-refactor cycle</action>

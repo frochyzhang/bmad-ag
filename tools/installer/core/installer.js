@@ -808,9 +808,14 @@ class Installer {
       const sourceMd = path.join(path.dirname(agskillsPath), 'SOURCE.md');
       const staleness = String(moduleConfig.staleness_threshold_days || 30);
 
+      // project-root + project-name 供 postinstall 生成项目级 ag-core 约束文件
+      // (.claude/ai-context/00-instructions.md)。project_name 从 core/agcore config 取,
+      // 缺失则用项目目录名兜底。
+      const projectName = String(moduleConfig.project_name || path.basename(projectRoot) || 'ag-core-project');
+
       if (message) message('Setting up ag-core toolchain and knowledge base...');
 
-      spawnSync('bash', [scriptPath, agskillsPath, sourceMd, staleness], {
+      spawnSync('bash', [scriptPath, agskillsPath, sourceMd, staleness, projectRoot, projectName], {
         stdio: 'inherit',
         env: process.env,
       });
