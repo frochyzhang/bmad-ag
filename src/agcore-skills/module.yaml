@@ -1,7 +1,7 @@
 code: agcore
 name: "BMAD ag-core Skills"
-description: "集成 ag-core 微服务框架的内置 BMad 模块：加载 ag-skills 知识底座、走 proto→aggo 骨架→biz 填肉流水线、build+ag-core-lint 护栏，并把开发过程沉淀进唯一第二记忆体（Obsidian vault）。机器干生成/提炼，人守判断/收录。"
-default_selected: true # fork 版默认安装,一步装即带齐 ag-core 能力
+description: "仅 Go/ag-core 项目需要选择。集成 ag-core 微服务框架：加载 ag-skills 知识底座、走 proto→aggo 骨架→biz 填肉流水线、build+ag-core-lint 护栏，并把开发过程沉淀进唯一第二记忆体（Obsidian vault）。"
+default_selected: false # 按需安装，避免非 Go 项目安装 aggo、ag-skills 和 ag 相关技能
 
 header: "BMAD ag-core Configuration"
 subheader: "配置 ag-core 集成模块。\n工具链从 GitHub 唯一来源安装,知识底座 clone ag-skills,开发记忆沉淀进 Obsidian vault。"

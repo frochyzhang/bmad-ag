@@ -17,6 +17,7 @@ const fs = require('../tools/installer/fs-native');
 const { Installer } = require('../tools/installer/core/installer');
 const { ManifestGenerator } = require('../tools/installer/core/manifest-generator');
 const { OfficialModules } = require('../tools/installer/modules/official-modules');
+const { UI } = require('../tools/installer/ui');
 const { IdeManager } = require('../tools/installer/ide/manager');
 const { clearCache, loadPlatformCodes } = require('../tools/installer/ide/platform-codes');
 
@@ -3608,6 +3609,33 @@ async function runTests() {
     }
   } catch (error) {
     console.log(`${colors.red}Test Suite 48 setup failed: ${error.message}${colors.reset}`);
+    console.log(error.stack);
+    failed++;
+  }
+
+  console.log('');
+
+  // ============================================================
+  // Test Suite 49: agcore opt-in installation
+  // ============================================================
+  console.log(`${colors.yellow}Test Suite 49: agcore opt-in installation${colors.reset}\n`);
+
+  try {
+    const availableModules49 = (await new OfficialModules().listAvailable()).modules;
+    const agcoreModule49 = availableModules49.find((module) => module.id === 'agcore');
+    assert(agcoreModule49?.defaultSelected === false, 'agcore is available but not selected by default for new projects');
+
+    const ui49 = new UI();
+    const freshDefaults49 = await ui49.getDefaultModules(new Set());
+    assert(freshDefaults49.includes('bmm'), '--yes defaults retain the standard bmm module');
+    assert(!freshDefaults49.includes('agcore'), '--yes defaults exclude agcore for a fresh project');
+
+    const existingDefaults49 = await ui49.getDefaultModules(new Set(['agcore']));
+    assert(existingDefaults49.includes('bmm'), 'updates retain the standard bmm module alongside agcore');
+    assert(existingDefaults49.includes('agcore'), 'updates preserve agcore when it is already installed');
+    assert(new Set(existingDefaults49).size === existingDefaults49.length, 'update defaults do not duplicate installed agcore');
+  } catch (error) {
+    console.log(`${colors.red}Test Suite 49 setup failed: ${error.message}${colors.reset}`);
     console.log(error.stack);
     failed++;
   }
