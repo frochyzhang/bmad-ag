@@ -68,7 +68,7 @@ that already contain its `gds` module remain recognized during updates.
 Run the installer from the current `main` branch:
 
 ```bash
-npx --yes --package github:frochyzhang/bmad-ag#main bmad install
+npx github:frochyzhang/bmad-ag#main install
 ```
 
 For a reproducible installation, choose a tag from
@@ -76,7 +76,7 @@ For a reproducible installation, choose a tag from
 
 ```bash
 BMAD_AG_REF=v1.1.2
-npx --yes --package "github:frochyzhang/bmad-ag#${BMAD_AG_REF}" bmad install
+npx github:frochyzhang/bmad-ag#${BMAD_AG_REF}" bmad install
 ```
 
 The fork uses `v1.x` GitHub Release tags, while the inherited package metadata
@@ -100,7 +100,7 @@ checkout:
 
 ```bash
 cd /path/to/your/project
-npx --yes --package /absolute/path/to/bmad-ag bmad install
+npx --package /absolute/path/to/bmad-ag bmad install
 ```
 
 ### Non-Interactive Installation
@@ -108,7 +108,7 @@ npx --yes --package /absolute/path/to/bmad-ag bmad install
 Install the standard BMad Method workflow into a Claude Code project:
 
 ```bash
-npx --yes --package github:frochyzhang/bmad-ag#main bmad install \
+npx --package github:frochyzhang/bmad-ag#main bmad install \
   --directory /path/to/project \
   --modules bmm \
   --tools claude-code \
@@ -119,8 +119,8 @@ List supported tool IDs and module configuration keys before scripting an
 installation:
 
 ```bash
-npx --yes --package github:frochyzhang/bmad-ag#main bmad install --list-tools
-npx --yes --package github:frochyzhang/bmad-ag#main bmad install --list-options
+npx --package github:frochyzhang/bmad-ag#main bmad install --list-tools
+npx --package github:frochyzhang/bmad-ag#main bmad install --list-options
 ```
 
 ## Installing ag-core Support
@@ -133,7 +133,7 @@ For a non-interactive installation, include `agcore` and provide the vault path
 explicitly:
 
 ```bash
-npx --yes --package github:frochyzhang/bmad-ag#main bmad install \
+npx --package github:frochyzhang/bmad-ag#main bmad install \
   --directory /path/to/ag-core-project \
   --modules bmm,agcore \
   --tools claude-code \
