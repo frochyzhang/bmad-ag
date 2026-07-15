@@ -77,7 +77,7 @@ async function checkUvEnvironment() {
   const detected = module.exports.detectUv();
 
   if (detected) {
-    await prompts.log.success(`✅ Python UV check pass (uv ${detected.version.raw} detected).`);
+    await prompts.log.success(`✅ Python UV check passed (uv ${detected.version.raw} detected).`);
     return { status: 'found', detected };
   }
 

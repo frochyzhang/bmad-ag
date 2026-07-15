@@ -2430,6 +2430,17 @@ async function runTests() {
           url: 'https://github.com/bmad-code-org/bmad-method-test-architecture-enterprise',
           defaultChannel: 'stable',
         },
+        {
+          code: 'gds',
+          name: 'BMad Game Dev Studio',
+          description: 'Game development module',
+          defaultSelected: false,
+          builtIn: false,
+          deprecated: true,
+          deprecationMessage: 'Temporarily unavailable for new BMAD AG installations.',
+          url: 'https://github.com/bmad-code-org/bmad-module-game-dev-studio',
+          defaultChannel: 'stable',
+        },
       ];
     };
 
@@ -2442,6 +2453,9 @@ async function runTests() {
       }
       if (repoUrl.includes('bmad-method-test-architecture-enterprise')) {
         return { channel: 'stable', version: 'v1.15.0', ref: 'v1.15.0', resolvedFallback: false };
+      }
+      if (repoUrl.includes('bmad-module-game-dev-studio')) {
+        return { channel: 'stable', version: 'v0.6.0', ref: 'v0.6.0', resolvedFallback: false };
       }
       throw new Error(`unexpected repo ${repoUrl}`);
     };
@@ -2482,11 +2496,29 @@ async function runTests() {
       );
       assert(seenLabels39.includes('Test Architect (v1.15.0)'), 'official module picker shows latest git-tag version for fresh installs');
       assert(
+        !seenLabels39.some((label) => label.includes('BMad Game Dev Studio')),
+        'official module picker hides deprecated Game Dev Studio for fresh installs',
+      );
+      assert(
         spinnerStarts39.includes('Checking latest module versions...'),
         'official module picker wraps external lookups in a single spinner',
       );
       assert(spinnerStops39.includes('Checked latest module versions.'), 'official module picker stops the version-check spinner');
       assert(warnings39.length === 0, 'official module picker does not warn when tag lookups succeed');
+
+      seenLabels39.length = 0;
+      await ui._selectOfficialModules(
+        new Set(['gds']),
+        new Map([
+          ['gds', '0.6.0'],
+          ['core', '6.2.0'],
+        ]),
+        { global: null, nextSet: new Set(), pins: new Map(), warnings: [] },
+      );
+      assert(
+        seenLabels39.some((label) => label.includes('BMad Game Dev Studio')),
+        'official module picker retains deprecated Game Dev Studio for existing installs',
+      );
     } finally {
       OfficialModules.prototype.listAvailable = originalOfficialListAvailable39;
       ExternalModuleManager.prototype.listAvailable = originalExternalListAvailable39;
@@ -3409,8 +3441,8 @@ async function runTests() {
       let result = await uvCheck.checkUvEnvironment();
       assert(result.status === 'found' && seen.success.length === 1, 'uv present logs success');
       assert(
-        seen.success[0].includes('Python UV check pass') && seen.warn.length === 0,
-        'uv present shows Python UV check pass, no warning',
+        seen.success[0].includes('Python UV check passed') && seen.warn.length === 0,
+        'uv present shows Python UV check passed, no warning',
       );
 
       // Branch: uv missing — warn + setup note, never blocks (no prompt).

@@ -115,6 +115,8 @@ modules:
     type: bmad-org
     npmPackage: bmad-game-dev-studio
     default_channel: stable
+    deprecated: true
+    deprecation-message: "Temporarily unavailable for new BMAD AG installations."
 
   bmad-method-wds-expansion:
     url: https://github.com/bmad-code-org/bmad-method-wds-expansion

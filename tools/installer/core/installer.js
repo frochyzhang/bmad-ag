@@ -1293,9 +1293,6 @@ class Installer {
       '',
       `    ${color.cyan('Tip:')} BMAD workflows increasingly run Python scripts via ${color.cyan('uv run')} — uv is`,
       `    becoming the de facto standard. If you don't have it yet, ask your agent to set it up.`,
-      '',
-      `    Blog, Docs and Guides: ${color.blue('https://bmadcode.com/')}`,
-      `    Community: ${color.blue('https://discord.gg/gk8jAdXWmj')}`,
     );
 
     await prompts.box(lines.join('\n'), 'BMAD is ready to use!', {
