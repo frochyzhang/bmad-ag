@@ -75,7 +75,7 @@ For a reproducible installation, choose a tag from
 [GitHub Releases](https://github.com/frochyzhang/bmad-ag/releases) and pin it:
 
 ```bash
-BMAD_AG_REF=v1.1.2
+BMAD_AG_REF=v1.1.4
 npx github:frochyzhang/bmad-ag#${BMAD_AG_REF}" bmad install
 ```
 
