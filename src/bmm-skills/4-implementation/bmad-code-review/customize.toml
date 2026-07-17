@@ -91,3 +91,17 @@ Launch a subagent with no prior conversation context, with this prompt:
 > Diff:
 > {diff_output}
 """
+
+# fork-local (bmad-ag): abstraction-fitness layer.
+# Ships the bmad-review-abstraction-fitness skill as a code-review dimension.
+# See spec: _bmad-output/specs/spec-design-pattern-detection/
+[[workflow.review_layers]]
+id = "abstraction-fitness"
+name = "Abstraction Fitness Reviewer"
+instruction = """
+Launch a subagent with no prior conversation context, with this prompt:
+
+> Invoke the `bmad-review-abstraction-fitness` skill on this diff:
+>
+> {diff_output}
+"""
